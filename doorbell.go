@@ -51,11 +51,16 @@ Code send. <a href="/">Send again</a>
 var formTemplate = template.Must(template.New("EnterCode").Parse(`
 <html>
 <head><title>Enter Code</title></head>
+<script>
+window.onload = function() {
+  document.getElementById("code").focus();
+};
+</script>
 <body>
 <form action="/submitCode" method="POST">
 <center>
 <lable>Code</label>
-<input type="text" name="code">
+<input id="code" type="text" name="code" autofocus="autofocus"><br/>
 <input type="submit" value="Unlock">
 </center>
 </form>
