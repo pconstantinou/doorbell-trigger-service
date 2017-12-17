@@ -43,6 +43,7 @@ func handleSendCode(w http.ResponseWriter, r *http.Request) {
 var confirmationTemplate = template.Must(template.New("Response").Parse(`
 <html>
 <head><title>Send</title></head>
+<meta name="viewport" content="width=device-width,initial-scale=1">
 <body>
 Code send. <a href="/">Send again</a>
 </body></html>
@@ -50,19 +51,35 @@ Code send. <a href="/">Send again</a>
 
 var formTemplate = template.Must(template.New("EnterCode").Parse(`
 <html>
-<head><title>Enter Code</title></head>
+<head><title>Enter Code</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="stylesheet" href="https://www.w3schools.com/w3css/4/w3mobile.css">
+</head>
 <script>
 window.onload = function() {
   document.getElementById("code").focus();
 };
 </script>
 <body>
+<div class="w3-container">
+  <h1 style="text-align: center;">Doorman</h1>
+</div>
+
+<div class="w3-cell-row">
+  <div class="w3-cell">
+    
+  </div>
+  <div class="w3-cell w3-container">
 <form action="/submitCode" method="POST">
-<center>
-<lable>Code</label>
-<input id="code" type="text" name="code" autofocus="autofocus"><br/>
-<input type="submit" value="Unlock">
-</center>
+
+<div>
+<input id="code" type="tel" name="code" autofocus="autofocus" 
+       style="text-align: center;width: 100%; border: 4px; padding: 4px; margin: 4px;border-color: black;background-color: SkyBlue"><p/>
+<input type="submit" value="Unlock"  style="width: 100%; border: 4px; padding: 4px; margin: 4px;">
+</div>
 </form>
+  </div>
+</div>
+
 </body></html>
 `))
