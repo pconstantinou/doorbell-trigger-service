@@ -17,11 +17,11 @@ var client = pusher.Client{
 	Secure:  pusherConfig.Secure,
 }
 
-func main() {
+func init() {
 	http.HandleFunc("/", handleShowForm)
 	http.HandleFunc("/submitCode", handleSendCode)
-	log.Print("Listening on port 8080")
-	log.Fatal(http.ListenAndServe(":8080", nil))
+	//	log.Print("Listening on port 8080")
+	//	log.Fatal(http.ListenAndServe(":8080", nil))
 }
 
 func handleShowForm(w http.ResponseWriter, r *http.Request) {
@@ -36,17 +36,43 @@ func handleSendCode(w http.ResponseWriter, r *http.Request) {
 
 	inputCode := r.Form["code"][0]
 	data := map[string]string{"message": inputCode}
+	log.Print("Sending code")
 	client.Trigger(pusherConfig.Channel, pusherConfig.Event, data)
 	confirmationTemplate.Execute(w, nil)
 }
 
 var confirmationTemplate = template.Must(template.New("Response").Parse(`
 <html>
-<head><title>Send</title></head>
-<meta name="viewport" content="width=device-width,initial-scale=1">
+<head><title>Enter Code</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="stylesheet" href="https://www.w3schools.com/w3css/4/w3mobile.css">
+</head>
+<script>
+window.onload = function() {
+  document.getElementById("code").focus();
+};
+</script>
 <body>
-Code send. <a href="/">Send again</a>
+<div class="w3-container">
+  <h1 style="text-align: center;">Doorman</h1>
+</div>
+
+<div class="w3-cell-row">
+  <div class="w3-cell">
+    
+  </div>
+  <div class="w3-cell w3-container">
+<form action="/" method="GET">
+<div>
+<div>Code send.</div>
+<input type="submit" value="Send Again"  style="width: 100%; border: 4px; padding: 4px; margin: 4px;">
+</div>
+</form>
+  </div>
+</div>
+
 </body></html>
+
 `))
 
 var formTemplate = template.Must(template.New("EnterCode").Parse(`
