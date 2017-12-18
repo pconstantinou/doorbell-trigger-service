@@ -2,20 +2,14 @@ package main
 
 import (
 	"github.com/pusher/pusher-http-go"
+	"google.golang.org/appengine"
+	"google.golang.org/appengine/urlfetch"
 	"html/template"
 	"log"
 	"net/http"
 )
 
 var pusherConfig = GetPusherConfig()
-
-var client = pusher.Client{
-	AppId:   pusherConfig.AppId,
-	Key:     pusherConfig.Key,
-	Secret:  pusherConfig.Secret,
-	Cluster: pusherConfig.Cluster,
-	Secure:  pusherConfig.Secure,
-}
 
 func init() {
 	http.HandleFunc("/", handleShowForm)
@@ -30,6 +24,7 @@ func handleShowForm(w http.ResponseWriter, r *http.Request) {
 }
 
 func handleSendCode(w http.ResponseWriter, r *http.Request) {
+
 	r.ParseForm()
 
 	log.Print("Serving the front page.")
@@ -37,8 +32,27 @@ func handleSendCode(w http.ResponseWriter, r *http.Request) {
 	inputCode := r.Form["code"][0]
 	data := map[string]string{"message": inputCode}
 	log.Print("Sending code")
-	client.Trigger(pusherConfig.Channel, pusherConfig.Event, data)
-	confirmationTemplate.Execute(w, nil)
+
+	ctx := appengine.NewContext(r)
+	var client = pusher.Client{
+		AppId:      pusherConfig.AppId,
+		Key:        pusherConfig.Key,
+		Secret:     pusherConfig.Secret,
+		Cluster:    pusherConfig.Cluster,
+		Secure:     pusherConfig.Secure,
+		HttpClient: urlfetch.Client(ctx),
+	}
+
+	var _, err = client.Trigger(pusherConfig.Channel, pusherConfig.Event, data)
+	if err != nil {
+		log.Print("Failed to trigger event :", err)
+	} else {
+		log.Print("Tigger send successfully")
+	}
+	var appError = confirmationTemplate.Execute(w, nil)
+	if appError != nil {
+		log.Print("Failed to write template:", appError)
+	}
 }
 
 var confirmationTemplate = template.Must(template.New("Response").Parse(`
@@ -64,7 +78,7 @@ window.onload = function() {
   <div class="w3-cell w3-container">
 <form action="/" method="GET">
 <div>
-<div>Code send.</div>
+<div style="text-align: center;">Code sent.</div>
 <input type="submit" value="Send Again"  style="width: 100%; border: 4px; padding: 4px; margin: 4px;">
 </div>
 </form>
