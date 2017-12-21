@@ -14,8 +14,6 @@ var pusherConfig = GetPusherConfig()
 func init() {
 	http.HandleFunc("/", handleShowForm)
 	http.HandleFunc("/submitCode", handleSendCode)
-	//	log.Print("Listening on port 8080")
-	//	log.Fatal(http.ListenAndServe(":8080", nil))
 }
 
 func handleShowForm(w http.ResponseWriter, r *http.Request) {
