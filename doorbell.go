@@ -99,6 +99,15 @@ var formTemplate = template.Must(template.New("EnterCode").Parse(`
 window.onload = function() {
   document.getElementById("code").focus();
 };
+
+function validateForm() {
+    var x = document.forms["codeForm"]["code"].value;
+    if (x == "") {
+        alert("Provide a passcode.");
+        return false;
+    }
+}
+
 </script>
 <body>
 <div class="w3-container">
@@ -110,10 +119,11 @@ window.onload = function() {
     
   </div>
   <div class="w3-cell w3-container">
-<form action="/submitCode" method="POST">
+<form name="codeForm" action="/submitCode" method="POST" onsubmit="return validateForm()">
 
 <div>
 <input id="code" type="tel" name="code" autofocus="autofocus" 
+	   placeholder="Enter Passcode"
        style="text-align: center;width: 100%; border: 4px; padding: 4px; margin: 4px;border-color: black;background-color: SkyBlue"><p/>
 <input type="submit" value="Unlock"  style="width: 100%; border: 4px; padding: 4px; margin: 4px;">
 </div>
