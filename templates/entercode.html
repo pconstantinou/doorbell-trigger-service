@@ -1,0 +1,126 @@
+<html>
+<head><title>Enter Code</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="stylesheet" href="https://www.w3schools.com/w3css/4/w3mobile.css">
+</head>
+<script>
+window.onload = function() {
+  document.getElementById('code').focus();
+};
+
+function validateForm() {
+    var code = document.forms['codeForm']['code'].value;
+    var idToken = document.forms['codeForm']['idToken'].value;
+    if (code == "" && idToken == "") {
+        alert("Provide a passcode.");
+        return false;
+    }
+    return true;
+}
+</script>
+
+<script src="https://www.gstatic.com/firebasejs/4.8.1/firebase.js"></script>
+<script>
+  // Initialize Firebase
+  var config = {
+    apiKey: "AIzaSyAbxVj2ujhIDv939e9ve37Qm42UPYZOZH0",
+    authDomain: "doorbell-dev-ed29e.firebaseapp.com",
+    databaseURL: "https://doorbell-dev-ed29e.firebaseio.com",
+    projectId: "doorbell-dev",
+    storageBucket: "doorbell-dev.appspot.com",
+    messagingSenderId: "492680925319"
+  };
+  firebase.initializeApp(config);
+</script>
+<script src="https://cdn.firebase.com/libs/firebaseui/2.5.1/firebaseui.js"></script>
+<link type="text/css" rel="stylesheet" href="https://cdn.firebase.com/libs/firebaseui/2.5.1/firebaseui.css" />
+
+<script type="text/javascript">
+  // FirebaseUI config.
+  var uiConfig = {
+    signInSuccessUrl: '/',
+    signInOptions: [
+      // Leave the lines as is for the providers you want to offer your users.
+      firebase.auth.GoogleAuthProvider.PROVIDER_ID
+    ],
+    // Terms of service url.
+    tosUrl: 'https://google.com/terms'
+  };
+
+  // Initialize the FirebaseUI Widget using Firebase.
+  var ui = new firebaseui.auth.AuthUI(firebase.auth());
+  // The start method will wait until the DOM is loaded.
+  ui.start('#firebaseui-auth-container', uiConfig);
+</script>
+
+
+<script type="text/javascript">
+  // Handle Authentication ********************************************
+  initApp = function() {
+    firebase.auth().onAuthStateChanged(function(user) {
+      if (user) {
+        // User is signed in.
+        var displayName = user.displayName;
+        var email = user.email;
+        var emailVerified = user.emailVerified;
+        var photoURL = user.photoURL;
+        var uid = user.uid;
+        var phoneNumber = user.phoneNumber;
+        var providerData = user.providerData;
+        user.getIdToken().then(function(accessToken) {
+          document.getElementById('firebaseui-auth-container').hidden = true;
+          document.getElementById('code').hidden = true;
+          document.getElementById('photo').hidden = false;
+          document.getElementById('signed-in').hidden = false;
+          document.getElementById('photo').src = photoURL;
+          document.getElementById('idToken').value = accessToken;
+        });
+      } else {
+        // User is signed out.
+          document.getElementById('signed-in').hidden = true;
+          document.getElementById('photo').hidden = true;
+          document.getElementById('firebaseui-auth-container').hidden = false;
+          document.getElementById('code').hidden = false;
+      }
+    }, function(error) {
+      console.log(error);
+    });
+  };
+
+  window.addEventListener('load', function() {
+    initApp()
+  });
+</script>
+
+<body>
+<div class="w3-container">
+  <h1 style="text-align: center;">Doorman</h1>
+</div>
+
+<div class="w3-cell-row">
+  <div class="w3-cell">
+    
+  </div>
+  <div class="w3-cell w3-container">
+<form name="codeForm" action="/submitCode" method="POST" onsubmit="return validateForm()">
+
+<div>
+<input type="hidden" name="idToken" id="idToken"/>
+<input id="code" type="tel" name="code" autofocus="autofocus" 
+	   placeholder="Enter Passcode"
+       style="text-align: center;width: 100%; border: 4px; padding: 4px; margin: 4px;border-color: black;background-color: SkyBlue"><p/>
+<input type="submit" value="Unlock"  style="width: 100%; border: 4px; padding: 4px; margin: 4px;">
+</div>
+</form>
+  </div>
+</div>
+
+<div id="firebaseui-auth-container"></div>
+<div id="signed-in">
+<center><img src="" id="photo" height="128" width="128"
+     style="text-align: center;border: 4px; padding: 4px; margin: 4px;border-color: black" />
+     <br/>
+     <a href="#" onclick="firebase.auth().signOut();">Logout</a>
+</center>
+</div>
+</body></html>

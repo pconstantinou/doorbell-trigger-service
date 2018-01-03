@@ -1,0 +1,9 @@
+{
+	"AppId":   "",
+	"Key":     "",
+	"Secret":  "",
+	"Cluster": "us2",
+	"Secure":  true,
+	"Channel": "my-channel",
+	"Event":   "my-event"
+}
