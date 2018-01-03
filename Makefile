@@ -4,11 +4,11 @@ verify:
 	golint
 	
 
+test:
+	echo "Starting local development server"
+	dev_appserver.py app.yaml &
 
-deploy: verify
-	go run *.go
 
-
-publish: build
+publish: verify
 	gcloud app deploy
 
