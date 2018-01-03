@@ -8,7 +8,7 @@ window.onload = function() {
   document.getElementById('code').focus();
 };
 
-function validateForm() {
+validateForm = function() {
     var code = document.forms['codeForm']['code'].value;
     var idToken = document.forms['codeForm']['idToken'].value;
     if (code == "" && idToken == "") {
@@ -18,7 +18,8 @@ function validateForm() {
     return true;
 }
 </script>
-
+<!-- *************************************************************************** -->
+<!-- ***** Replace this with configuration from Firebase Authentication ******** -->
 <script src="https://www.gstatic.com/firebasejs/4.8.1/firebase.js"></script>
 <script>
   // Initialize Firebase
@@ -32,6 +33,8 @@ function validateForm() {
   };
   firebase.initializeApp(config);
 </script>
+<!-- *************************************************************************** -->
+<!-- *************************************************************************** -->
 <script src="https://cdn.firebase.com/libs/firebaseui/2.5.1/firebaseui.js"></script>
 <link type="text/css" rel="stylesheet" href="https://cdn.firebase.com/libs/firebaseui/2.5.1/firebaseui.css" />
 
