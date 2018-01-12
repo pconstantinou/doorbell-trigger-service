@@ -8,6 +8,7 @@ import (
 	"google.golang.org/appengine/urlfetch"
 	"html/template"
 	"log"
+	"net"
 	"net/http"
 	"strings"
 
@@ -113,6 +114,15 @@ func isAuthorized(r *http.Request) (bool, *auth.UserRecord) {
 
 func handleSendCode(w http.ResponseWriter, r *http.Request) {
 	var inputCode string
+	var ip = r.RemoteAddr
+
+	var headers string
+	for k, v := range r.Header {
+		headers += k + "->" + strings.Join(v, ",")
+	}
+
+	log.Print(net.SplitHostPort(r.RemoteAddr))
+	log.Print(r.Header)
 
 	r.ParseForm()
 
@@ -132,8 +142,16 @@ func handleSendCode(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if authorized {
-		data := map[string]string{"message": inputCode}
-		log.Print("Sending code to pusher app: ", pusherConfigData.AppId)
+		data := map[string]string{
+			"message":    inputCode,
+			"ip":         ip,
+			"header":     headers,
+			"remoteAddr": r.RemoteAddr,
+			"referrer":   r.Referer(),
+			"uri":        r.RequestURI,
+		}
+		log.Print("Sending code to pusher app: ", pusherConfigData.AppId, " from ip ", ip)
+		log.Print(data)
 
 		ctx := appengine.NewContext(r)
 		var client = pusher.Client{
