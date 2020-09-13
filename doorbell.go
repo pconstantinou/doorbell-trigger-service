@@ -1,20 +1,21 @@
 package main
 
 import (
-	firebase "firebase.google.com/go"
-	"firebase.google.com/go/auth"
-	"github.com/pusher/pusher-http-go"
-	"google.golang.org/appengine"
-	"google.golang.org/appengine/urlfetch"
 	"html/template"
 	"log"
 	"net"
 	"net/http"
+	"os"
 	"strings"
 
+	firebase "firebase.google.com/go"
+	"firebase.google.com/go/auth"
+	"github.com/pusher/pusher-http-go"
+
 	"encoding/json"
-	"google.golang.org/api/option"
 	"io/ioutil"
+
+	"google.golang.org/api/option"
 )
 
 const (
@@ -22,14 +23,14 @@ const (
 	PusherConfigPath = "./pusher.json"
 	// FirebaseConfigPath is the location of the firebase authentication secrets and configuration properties.
 	// Note, the ./templates/entercode.html file also needs to be updated.
-	FirebaseConfigPath = "./doorbell-dev-firebase-adminsdk.json"
+	FirebaseConfigPath = "./doorbell-520-firebase-adminsdk-mvx33-b87513bbce.json"
 )
 
 var formTemplate = loadTemplate("EnterCode", "./templates/entercode.html")
 var confirmationTemplate = loadTemplate("Confirmation", "./templates/confirm.html")
 
 type pusherConfig struct {
-	AppId   string
+	AppID   string
 	Key     string
 	Secret  string
 	Cluster string
@@ -43,6 +44,30 @@ var pusherConfigData = loadPusherConfig(PusherConfigPath)
 func init() {
 	http.HandleFunc("/", handleShowForm)
 	http.HandleFunc("/submitCode", handleSendCode)
+	http.HandleFunc("/custom_icon.png", handleIcon)
+	http.HandleFunc("/fav.ico", handleIcon)
+}
+
+const customIconPath = "custom_icon.png"
+
+func handleIcon(w http.ResponseWriter, r *http.Request) {
+
+	file, err := os.Open(customIconPath)
+	if err != nil {
+		log.Printf("Failed to open %s", customIconPath)
+		return
+	}
+	defer file.Close()
+
+	data := make([]byte, 512)
+
+	for {
+		i, err := file.Read(data)
+		if err != nil {
+			break
+		}
+		w.Write(data[0:i])
+	}
 }
 
 func loadTemplate(name, path string) *template.Template {
@@ -66,7 +91,7 @@ func loadPusherConfig(path string) pusherConfig {
 	if jsonerr := json.Unmarshal(raw, &p); jsonerr != nil {
 		log.Fatal(jsonerr)
 	}
-	log.Print("Loaded app id:", p.AppId)
+	log.Print("Loaded app id:", p.AppID)
 	return p
 }
 
@@ -82,7 +107,7 @@ func isAuthorized(r *http.Request) (bool, *auth.UserRecord) {
 		return false, nil
 	}
 
-	ctx := appengine.NewContext(r)
+	ctx := r.Context()
 
 	opt := option.WithCredentialsFile(FirebaseConfigPath)
 	app, err := firebase.NewApp(ctx, nil, opt)
@@ -97,7 +122,7 @@ func isAuthorized(r *http.Request) (bool, *auth.UserRecord) {
 		return false, nil
 	}
 
-	token, err := client.VerifyIDToken(idToken[0])
+	token, err := client.VerifyIDToken(ctx, idToken[0])
 	if err != nil {
 		log.Fatalf("error verifying ID token: %v. submitted token: %v\n verified: %v\ncontext: %v\n", err, idToken[0], token, ctx)
 		return false, nil
@@ -150,20 +175,19 @@ func handleSendCode(w http.ResponseWriter, r *http.Request) {
 			"referrer":   r.Referer(),
 			"uri":        r.RequestURI,
 		}
-		log.Print("Sending code to pusher app: ", pusherConfigData.AppId, " from ip ", ip)
+		log.Print("Sending code to pusher app: ", pusherConfigData.AppID, " from ip ", ip)
 		log.Print(data)
 
-		ctx := appengine.NewContext(r)
-		var client = pusher.Client{
-			AppId:      pusherConfigData.AppId,
+		client := pusher.Client{
+			AppID:      pusherConfigData.AppID,
 			Key:        pusherConfigData.Key,
 			Secret:     pusherConfigData.Secret,
 			Cluster:    pusherConfigData.Cluster,
 			Secure:     pusherConfigData.Secure,
-			HttpClient: urlfetch.Client(ctx),
+			HTTPClient: http.DefaultClient,
 		}
 
-		var _, err = client.Trigger(pusherConfigData.Channel, pusherConfigData.Event, data)
+		var err = client.Trigger(pusherConfigData.Channel, pusherConfigData.Event, data)
 		if err != nil {
 			log.Print("Failed to trigger event :", err)
 		} else {
@@ -171,4 +195,19 @@ func handleSendCode(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 	confirmationTemplate.Execute(w, nil)
+}
+
+func main() {
+	// [START setting_port]
+	port := os.Getenv("PORT")
+	if port == "" {
+		port = "8080"
+		log.Printf("Defaulting to port %s", port)
+	}
+
+	log.Printf("Listening on port %s", port)
+	if err := http.ListenAndServe(":"+port, nil); err != nil {
+		log.Fatal(err)
+	}
+	// [END setting_port]
 }

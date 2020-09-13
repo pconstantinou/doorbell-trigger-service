@@ -2,97 +2,108 @@
 <head><title>Enter Code</title>
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <link rel="stylesheet" href="https://www.w3schools.com/w3css/4/w3mobile.css">
+
+  <script src="https://www.gstatic.com/firebasejs/7.20.0/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/7.20.0/firebase-analytics.js"></script>
+
+  <!-- Add Firebase products that you want to use -->
+  <script src="https://www.gstatic.com/firebasejs/7.20.0/firebase-auth.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/7.20.0/firebase-firestore.js"></script>
+
+  <script src="https://cdn.firebase.com/libs/firebaseui/3.5.2/firebaseui.js"></script>
+  <link type="text/css" rel="stylesheet" href="https://cdn.firebase.com/libs/firebaseui/3.5.2/firebaseui.css" />
 </head>
+<link rel="apple-touch-icon" href="/custom_icon.png">
 <script>
-window.onload = function() {
-  document.getElementById('code').focus();
-};
 
-validateForm = function() {
-    var code = document.forms['codeForm']['code'].value;
-    var idToken = document.forms['codeForm']['idToken'].value;
-    if (code == "" && idToken == "") {
-        alert("Provide a passcode.");
-        return false;
+updateLoginState = function(user) {
+    if (user) {
+      console.log("you are signed in!!!! " + user)
+      // User is signed in.
+      var displayName = user.displayName;
+      var email = user.email;
+      var emailVerified = user.emailVerified;
+      var photoURL = user.photoURL;
+      var uid = user.uid;
+      var phoneNumber = user.phoneNumber;
+      var providerData = user.providerData;
+      console.log(user)
+      
+      user.getIdToken().then(function(accessToken) {
+        document.getElementById('firebaseui-auth-container').hidden = true;
+        document.getElementById('code').hidden = true;
+        document.getElementById('photo').hidden = false;
+        document.getElementById('signed-in').hidden = false;
+        document.getElementById('sign-in').hidden = true;
+        document.getElementById('photo').src = photoURL;
+        document.getElementById('idToken').value = accessToken;
+      });
+    } else {
+      // User is signed out.
+        document.getElementById('signed-in').hidden = true;
+        document.getElementById('sign-in').hidden = false;
+        document.getElementById('photo').hidden = true;
+        document.getElementById('firebaseui-auth-container').hidden = false;
+        document.getElementById('code').hidden = false;
     }
-    return true;
-}
-</script>
-<!-- *************************************************************************** -->
-<!-- ***** Replace this with configuration from Firebase Authentication ******** -->
-<script src="https://www.gstatic.com/firebasejs/4.8.1/firebase.js"></script>
-<script>
-  // Initialize Firebase
-  var config = {
-    apiKey: "AIzaSyAbxVj2ujhIDv939e9ve37Qm42UPYZOZH0",
-    authDomain: "doorbell-dev-ed29e.firebaseapp.com",
-    databaseURL: "https://doorbell-dev-ed29e.firebaseio.com",
-    projectId: "doorbell-dev",
-    storageBucket: "doorbell-dev.appspot.com",
-    messagingSenderId: "492680925319"
-  };
-  firebase.initializeApp(config);
-</script>
-<!-- *************************************************************************** -->
-<!-- *************************************************************************** -->
-<script src="https://cdn.firebase.com/libs/firebaseui/2.5.1/firebaseui.js"></script>
-<link type="text/css" rel="stylesheet" href="https://cdn.firebase.com/libs/firebaseui/2.5.1/firebaseui.css" />
-
-<script type="text/javascript">
-  // FirebaseUI config.
-  var uiConfig = {
-    signInSuccessUrl: '/',
-    signInOptions: [
-      // Leave the lines as is for the providers you want to offer your users.
-      firebase.auth.GoogleAuthProvider.PROVIDER_ID
-    ],
-    // Terms of service url.
-    tosUrl: 'https://google.com/terms'
-  };
-
-  // Initialize the FirebaseUI Widget using Firebase.
-  var ui = new firebaseui.auth.AuthUI(firebase.auth());
-  // The start method will wait until the DOM is loaded.
-  ui.start('#firebaseui-auth-container', uiConfig);
-</script>
+  }
 
 
-<script type="text/javascript">
-  // Handle Authentication ********************************************
   initApp = function() {
-    firebase.auth().onAuthStateChanged(function(user) {
-      if (user) {
-        // User is signed in.
-        var displayName = user.displayName;
-        var email = user.email;
-        var emailVerified = user.emailVerified;
-        var photoURL = user.photoURL;
-        var uid = user.uid;
-        var phoneNumber = user.phoneNumber;
-        var providerData = user.providerData;
-        user.getIdToken().then(function(accessToken) {
-          document.getElementById('firebaseui-auth-container').hidden = true;
-          document.getElementById('code').hidden = true;
-          document.getElementById('photo').hidden = false;
-          document.getElementById('signed-in').hidden = false;
-          document.getElementById('photo').src = photoURL;
-          document.getElementById('idToken').value = accessToken;
-        });
-      } else {
-        // User is signed out.
-          document.getElementById('signed-in').hidden = true;
-          document.getElementById('photo').hidden = true;
-          document.getElementById('firebaseui-auth-container').hidden = false;
-          document.getElementById('code').hidden = false;
-      }
-    }, function(error) {
+    firebase.auth().onAuthStateChanged(updateLoginState, function(error) {
       console.log(error);
     });
   };
 
-  window.addEventListener('load', function() {
-    initApp()
-  });
+
+  // Your web app's Firebase configuration
+  // For Firebase JS SDK v7.20.0 and later, measurementId is optional
+  var firebaseConfig = {
+    apiKey: "AIzaSyA3gL33m7VcP-Flw4Y62pTH-467WaYfMiM",
+    authDomain: "doorbell-520.firebaseapp.com",
+    databaseURL: "https://doorbell-520.firebaseio.com",
+    projectId: "doorbell-520",
+    storageBucket: "doorbell-520.appspot.com",
+    messagingSenderId: "348305579781",
+    appId: "1:348305579781:web:7c5927796c8f67ebf0a16c",
+    measurementId: "G-F5D4SNKL9D"
+  };
+  // Initialize Firebase
+  firebase.initializeApp(firebaseConfig);
+  firebase.analytics();
+  initApp()
+</script>
+
+<script type="text/javascript">
+  window.onload = function() {
+    document.getElementById('code').focus();
+  };
+  
+  validateForm = function() {
+      var code = document.forms['codeForm']['code'].value;
+      var idToken = document.forms['codeForm']['idToken'].value;
+      if (code == "" && idToken == "") {
+          alert("Provide a passcode.");
+          return false;
+      }
+      return true;
+  }
+  updateLogin = function() {
+    updateLoginState(firebase.auth().currentUser)
+    if (firebase.auth().currentUser) {
+        firebase.auth().currentUser.getIdToken(/* forceRefresh */ true).then(function(idToken) {
+          // Send token to your backend via HTTPS
+          document.forms['codeForm']['idToken'].value = idToken
+          console.debug('Logging in') 
+          updateLoginState(firebase.auth().currentUser)
+        }).catch(function(error) {
+          console.debug('No token')
+          updateLoginState(nil)
+          // Handle error
+      });
+    }
+  }
+
 </script>
 
 <body>
@@ -101,29 +112,57 @@ validateForm = function() {
 </div>
 
 <div class="w3-cell-row">
-  <div class="w3-cell">
-    
-  </div>
+  <div class="w3-cell"></div>
   <div class="w3-cell w3-container">
-<form name="codeForm" action="/submitCode" method="POST" onsubmit="return validateForm()">
-
-<div>
-<input type="hidden" name="idToken" id="idToken"/>
-<input id="code" type="tel" name="code" autofocus="autofocus" 
-	   placeholder="Enter Passcode"
-       style="text-align: center;width: 100%; border: 4px; padding: 4px; margin: 4px;border-color: black;background-color: SkyBlue"><p/>
-<input type="submit" value="Unlock"  style="width: 100%; border: 4px; padding: 4px; margin: 4px;">
-</div>
-</form>
+    <form name="codeForm" action="/submitCode" method="POST" onsubmit="return validateForm()">
+      <div>
+        <input type="hidden" name="idToken" id="idToken"/>
+        <input id="code" type="tel" name="code" autofocus="autofocus" 
+            placeholder="Enter Passcode"
+              style="text-align: center;width: 100%; border: 4px; padding: 4px; margin: 4px;border-color: black;background-color: SkyBlue"><p/>
+        <input type="submit" value="Unlock"  style="width: 100%; border: 4px; padding: 4px; margin: 4px;">
+      </div>
+    </form>
   </div>
 </div>
 
 <div id="firebaseui-auth-container"></div>
-<div id="signed-in">
-<center><img src="" id="photo" height="128" width="128"
-     style="text-align: center;border: 4px; padding: 4px; margin: 4px;border-color: black" />
-     <br/>
-     <a href="#" onclick="firebase.auth().signOut();">Logout</a>
-</center>
+<div id="signed-in" style="text-align: center;">
+  <img src="" id="photo" height="128" width="128"
+      style="text-align: center;border: 4px; padding: 4px; margin: 4px;border-color:black" />
+      <br/>
+      <a href="#" onclick="firebase.auth().signOut();">Logout</a>
 </div>
+
+<p style="text-align: center;" id="sign-in">
+  <button onclick="googleSignIn()">Sign In with Google</button>
+</p>
+
+<script>
+  var provider = new firebase.auth.GoogleAuthProvider();
+  googleSignIn = function() {
+    firebase.auth().signInWithRedirect(provider);
+  }
+  initApp()
+  firebase.auth().getRedirectResult().then(function(result) {
+  if (result.credential) {
+    // This gives you a Google Access Token. You can use it to access the Google API.
+    var token = result.credential.accessToken;
+    // ...
+  }
+  // The signed-in user info.
+  var user = result.user;
+  updateLogin()
+  }).catch(function(error) {
+    // Handle Errors here.
+    var errorCode = error.code;
+    var errorMessage = error.message;
+    // The email of the user's account used.
+    var email = error.email;
+    // The firebase.auth.AuthCredential type that was used.
+    var credential = error.credential;
+    // ...
+    console.log(error)
+  });
+</script>
 </body></html>
